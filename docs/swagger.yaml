@@ -1,0 +1,336 @@
+basePath: /
+definitions:
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Book:
+    properties:
+      author:
+        example: J.K. Rowling
+        type: string
+      createdAt:
+        type: string
+      createdBy:
+        example: someone
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      genre:
+        example: Fantasy
+        type: string
+      id:
+        type: integer
+      tag:
+        example: Novel
+        type: string
+      title:
+        example: Harry Potter and The Chamber of Secrets
+        type: string
+      updatedAt:
+        type: string
+      year:
+        example: "1994"
+        type: string
+    type: object
+  models.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        example: someone@example.com
+        type: string
+      id:
+        type: integer
+      name:
+        example: someone
+        type: string
+      password:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  requests.BookPayload:
+    properties:
+      author:
+        example: J.K. Rowling
+        type: string
+      genre:
+        example: Fantasy
+        type: string
+      tag:
+        example: Novel
+        type: string
+      title:
+        example: Harry Potter and The Chamber of Secrets
+        type: string
+      year:
+        example: "1994"
+        type: string
+    required:
+    - author
+    - title
+    type: object
+  requests.LoginRequest:
+    properties:
+      email:
+        example: someone@example.com
+        type: string
+      password:
+        example: "1234567890"
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  requests.RegisterRequest:
+    properties:
+      email:
+        example: someone@example.com
+        type: string
+      name:
+        example: someone
+        type: string
+      password:
+        example: "1234567890"
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  responses.Error:
+    properties:
+      code:
+        example: 404
+        type: integer
+      error:
+        example: Data Not Found
+        type: string
+    type: object
+  responses.LoginResponse:
+    properties:
+      accessToken:
+        type: string
+      exp:
+        type: integer
+      refreshToken:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Book List
+  title: Book List
+  version: "1.0"
+paths:
+  /api/books:
+    get:
+      consumes:
+      - application/json
+      description: Get books
+      operationId: books-get
+      parameters:
+      - collectionFormat: multi
+        description: Books IDs
+        in: query
+        items:
+          type: string
+        name: id
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Book'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get books
+      tags:
+      - Books Actions
+    post:
+      consumes:
+      - application/json
+      description: Create book
+      operationId: books-create
+      parameters:
+      - description: Book title and author
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BookPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create book
+      tags:
+      - Books Actions
+  /api/books/{id}:
+    delete:
+      description: Delete book
+      operationId: books-delete
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/models.Book'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete book
+      tags:
+      - Books Actions
+    get:
+      consumes:
+      - application/json
+      description: Get book
+      operationId: book-get
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get book
+      tags:
+      - Books Actions
+    put:
+      consumes:
+      - application/json
+      description: Update book
+      operationId: books-update
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Book title and author
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BookPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update book
+      tags:
+      - Books Actions
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Perform user login
+      operationId: user-login
+      parameters:
+      - description: User's credentials
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Authenticate a user
+      tags:
+      - Auth Actions
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a user
+      operationId: user-register
+      parameters:
+      - description: User's credentials
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Register a user
+      tags:
+      - Auth Actions
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
